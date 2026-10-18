@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { calculate } = require('../calculator.js');
+const { calculate, modulo, power, squareRoot } = require('../calculator.js');
 
 test('calculates the example operations', async (t) => {
   const examples = [
@@ -62,12 +62,64 @@ test('rejects non-finite operands', () => {
 });
 
 test('rejects unsupported operators', () => {
-  assert.throws(() => calculate(1, '%', 2), {
+  assert.throws(() => calculate(1, '&', 2), {
     name: 'Error',
-    message: 'Unsupported operator: %',
+    message: 'Unsupported operator: &',
   });
-  assert.throws(() => calculate(1, '**', 2), {
+  assert.throws(() => calculate(1, '$', 2), {
     name: 'Error',
-    message: 'Unsupported operator: **',
+    message: 'Unsupported operator: $',
+  });
+});
+
+test('calculates modulo', () => {
+  assert.equal(modulo(5, 2), 1);
+  assert.equal(calculate(5, '%', 2), 1);
+  assert.equal(modulo(10, 3), 1);
+  assert.equal(calculate(10, '%', 3), 1);
+  assert.equal(modulo(-10, 3), -1);
+});
+
+test('rejects modulo by zero and non-finite operands', () => {
+  assert.throws(() => modulo(10, 0), {
+    name: 'RangeError',
+    message: 'Cannot calculate modulo by zero.',
+  });
+  assert.throws(() => calculate(10, '%', 0), /Cannot calculate modulo by zero/);
+  assert.throws(() => modulo(Infinity, 3), {
+    name: 'TypeError',
+    message: 'Operands must be finite numbers.',
+  });
+});
+
+test('calculates powers using the function and CLI operators', () => {
+  assert.equal(power(2, 3), 8);
+  assert.equal(calculate(2, '**', 3), 8);
+  assert.equal(calculate(2, '^', 3), 8);
+  assert.equal(power(9, 0.5), 3);
+});
+
+test('rejects non-finite power operands', () => {
+  assert.throws(() => power(2, Infinity), {
+    name: 'TypeError',
+    message: 'Operands must be finite numbers.',
+  });
+});
+
+test('calculates square roots of non-negative numbers', () => {
+  assert.equal(squareRoot(16), 4);
+  assert.equal(squareRoot(9), 3);
+  assert.equal(squareRoot(0), 0);
+  assert.ok(Math.abs(squareRoot(2) ** 2 - 2) < 1e-14);
+});
+
+test('rejects negative and non-finite square root inputs', () => {
+  assert.throws(() => squareRoot(-1), {
+    name: 'RangeError',
+    message: 'Cannot calculate the square root of a negative number.',
+  });
+  assert.throws(() => squareRoot(NaN), {
+    name: 'TypeError',
+    message: 'Operands must be finite numbers.',
   });
 });
